@@ -3,37 +3,51 @@ $(document).ready(function(){
 
     // MARK: - PROPERTIES ----------------------------------------------------------------------------
 
+    	// SET HYPERBOLOID VARIABLES
+
+		// Tubes
+		var cylRad = 0.25;
+		var cylHeight = 75;
+		var cylSeg = 8;
+
+		// Circles
+		var circRad = 25;
+		var circPtCt = 30;
+		var circ2Height = 50;
+		var circ2Rot = Math.PI/1.5;
+		var circ2pos = 30;
+
+
+
     	// SET SCENE 1 - - - - - - - Scene, camera, renderer
     	var scene1 = new THREE.Scene();
 		scene1.background = new THREE.Color( 0x5d99c6 );
 
 		var camera1 = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-		camera1.position.set(0,100,50);
+		camera1.position.set(circ2pos/2, 100 , circ2Height/2);
 		camera1.up = new THREE.Vector3(0,0,1);
 
 		var renderer1 = new THREE.WebGLRenderer({ antialias: true });
 		renderer1.setSize( window.innerWidth, window.innerHeight);
 
-		var cylRad = 0.25;
-		var cylHeight = 75;
-		var cylSeg = 8;
-
-		var circRad = 25;
-		var circPtCt = 30;
+		controls1 = new THREE.OrbitControls(camera1, renderer1.domElement);
 
 
-		var circ2Height = 50;
+		
 
 	// MARK: - ON LOAD DO ----------------------------------------------------------------------------
 
 		// Add WebGL scene to HTML
 		$('#canvasPlaceholder').html( renderer1.domElement );
 
-		controls1 = new THREE.OrbitControls(camera1, renderer1.domElement);
+		
+	// MARK: - ADD GEOMETRY  ----------------------------------------------------------------------------
 
-		var bottom = new THREE.Object3D();
-		var top = new THREE.Object3D();
 
+		var bottom = new THREE.Object3D(); // Lower circle
+		var top = new THREE.Object3D(); // Upper circle
+
+		// Generate points on top and bottom circles
 		for(i=0; i < circPtCt; i++) {
 
 			// Add a cylinder
@@ -61,68 +75,32 @@ $(document).ready(function(){
 
 			bottom.add( cylinder );
 			top.add( cylinder2 );
-
-			
-			//scene1.add( cylinder2 );
-
-			// var cylinder2 = cylinder;
-			// cylinder2.position.setZ(circ2Height);
-
-			// scene1.add( cylinder2 );
-
 		}
 
-		// console.log(bottom.children.length);
+		// Transform top circle
+		top.rotation.z = circ2Rot;
+		top.position.x += circ2pos;
 
-		for(i=0; i < bottom.children.length; i++) {
-			// console.log(bottom.children[i].position.x);
-		}
-
-		top.rotation.z = Math.PI/2;
-
-		
-		function cylinderMesh(pointX, pointY, material) {
-            var direction = new THREE.Vector3().subVectors(pointY, pointX);
-            var orientation = new THREE.Matrix4();
-            orientation.lookAt(pointX, pointY, new THREE.Object3D().up);
-            orientation.multiply(new THREE.Matrix4().set(1, 0, 0, 0,
-                0, 0, 1, 0,
-                0, -1, 0, 0,
-                0, 0, 0, 1));
-            var edgeGeometry = new THREE.CylinderGeometry(cylRad, cylRad, direction.length(), 8, 1);
-            var edge = new THREE.Mesh(edgeGeometry, material);
-            edge.applyMatrix(orientation);
-            // position based on midpoints - there may be a better solution than this
-            edge.position.x = (pointY.x + pointX.x) / 2;
-            edge.position.y = (pointY.y + pointX.y) / 2;
-            edge.position.z = (pointY.z + pointX.z) / 2;
-            return edge;
-        }
-
+		// Draw lines for points on circles
         scene1.updateMatrixWorld();
         top.updateMatrixWorld();
        	var material = new THREE.MeshBasicMaterial({color: 0xffffff});
 
        	for(i=0; i < bottom.children.length; i++){
-
-       		console.log("running");
-
+       		// Get points from circles
        		var pointB = bottom.children[i].position;
        		var pointT = new THREE.Vector3();
-
        		pointT.setFromMatrixPosition( top.children[i].matrixWorld);
 
+       		// Build connector
        		var connector = cylinderMesh( pointB , pointT, material);
+       		
+       		// Add connectors to Scene
        		scene1.add( connector) ;
-
        	}
        	
 
-       	
-
-
- 
-
+       	// Add geometries to scene
 		scene1.add( bottom );
 		scene1.add( top );
 		
@@ -169,15 +147,32 @@ $(document).ready(function(){
 				// Render scene
 				renderer1.render( scene1, camera1);
 				controls1.update();
-		}
+		};
 
+	// ___GEOMETRY HELPERS
 
+		// Add cylinder mesh from Points
+		function cylinderMesh(pointX, pointY, material) {
+            var direction = new THREE.Vector3().subVectors(pointY, pointX);
+            var orientation = new THREE.Matrix4();
+            orientation.lookAt(pointX, pointY, new THREE.Object3D().up);
+            orientation.multiply(new THREE.Matrix4().set(1, 0, 0, 0,
+                0, 0, 1, 0,
+                0, -1, 0, 0,
+                0, 0, 0, 1));
+            var edgeGeometry = new THREE.CylinderGeometry(cylRad, cylRad, direction.length(), 8, 1);
+            var edge = new THREE.Mesh(edgeGeometry, material);
+            edge.applyMatrix(orientation);
+            // position based on midpoints - there may be a better solution than this
+            edge.position.x = (pointY.x + pointX.x) / 2;
+            edge.position.y = (pointY.y + pointX.y) / 2;
+            edge.position.z = (pointY.z + pointX.z) / 2;
+            return edge;
+        }
 
 
 	// ___ALERTS
 
-
-    // ___GEOMETRY 
 
 
 

@@ -3,25 +3,31 @@ $(document).ready(function(){
 
     // MARK: - PROPERTIES ----------------------------------------------------------------------------
 
+    	// Add date to copyright 
+		var d = new Date()
+		var year = d.getFullYear()
+		console.log(year)
+		$('#crDate').html( "<i>Copyright &#169  " + year + " Jim Peraino. All rights reserved.</i>");
+
     	// SET HYPERBOLOID VARIABLES
 
 		// Tubes
-		var cylRad = 0.25;
+		var cylRad = 0.15;
 		var cylHeight = 75;
 		var cylSeg = 8;
 
 		// Circles
 		var circRad = 25;
-		var circPtCt = 30;
+		var circPtCt = 45;
 		var circ2Height = 50;
-		var circ2Rot = Math.PI/1.5;
-		var circ2pos = 30;
+		var circ2Rot = 120 * Math.PI / 180;
+		var circ2pos = 40;
 
 
 
     	// SET SCENE 1 - - - - - - - Scene, camera, renderer
     	var scene1 = new THREE.Scene();
-		scene1.background = new THREE.Color( 0x5d99c6 );
+		scene1.background = new THREE.Color( 0x9474cc );
 
 		var camera1 = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 		camera1.position.set(circ2pos/2, 100 , circ2Height/2);
@@ -127,8 +133,8 @@ $(document).ready(function(){
 	       	}
 	       	
 	       	hyperboloid.add( connectors );
-	       	hyperboloid.add( bottom );
-	       	hyperboloid.add( top );
+	       	//hyperboloid.add( bottom );
+	       	//hyperboloid.add( top );
 	       	hyperboloid.name = "hyperboloid";
 
 	       	// Add geometries to scene
@@ -155,10 +161,6 @@ $(document).ready(function(){
 			camera1.aspect = window.innerWidth / window.innerHeight;
 			camera1.updateProjectionMatrix();
 			renderer1.setSize( window.innerWidth, window.innerHeight );
-
-			camera2.aspect = window.innerWidth / window.innerHeight;
-			camera2.updateProjectionMatrix();
-			renderer2.setSize( window.innerWidth, window.innerHeight );
 		}
 
 		// With JQuery
@@ -168,8 +170,33 @@ $(document).ready(function(){
 			}
 		});
 
+		$('#ex2').slider({
+			formatter: function(value) {
+				return 'Current value: ' + value;
+			}
+		});
+
+		$('#ex3').slider({
+			formatter: function(value) {
+				return 'Current value: ' + value;
+			}
+		});
+
 		$('#ex1').on("slide", function(slideEvt){
 			circPtCt = slideEvt.value;
+			removeHyperboloid();
+			buildHyperboloid();
+		})
+
+		$('#ex2').on("slide", function(slideEvt2){
+			rotation = slideEvt2.value * Math.PI / 180;
+			circ2Rot = rotation;
+			removeHyperboloid();
+			buildHyperboloid();
+		})
+
+		$('#ex3').on("slide", function(slideEvt3){
+			circ2pos = slideEvt3.value;
 			removeHyperboloid();
 			buildHyperboloid();
 		})

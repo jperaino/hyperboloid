@@ -43,6 +43,7 @@ h1
 h6
 {
 	font-family: 'Cormorant Infant', serif;
+	font-size: 14px;
 }
 
 #jpLogoWhite.png
@@ -71,15 +72,23 @@ h6
 
 #title-block
 {
-	text-align: center;
-	width: 100vw;
-	margin-top: 35vh;
+	right: 0;
+	text-align: right;
+	margin-top: 20px;
 	padding-right: 30px;
 	padding-left: 30px;
 	vertical-align: center;
 	position: absolute;
+	color: white;
+
 }
 
+#sliders {
+	position: absolute;
+	margin-top: 20vh;
+	margin-left: var(--leftSide);
+
+}
 
 }
 
@@ -88,6 +97,14 @@ h6
 	font-family: 'Cormorant Infant', serif;
 }
 
+#date {
+	position: absolute;
+	bottom: 10px;
+	text-align: center;
+	padding-left: var(--leftSide);
+	margin: 0;
+	color: white;
+}
 
 #crDate
 {
@@ -107,6 +124,26 @@ h6
 	
 }
 
-#ex1Slider .slider-selection {
+#ex1Slider #ex2Slider #ex3Slider .slider-selection {
 	background: #BABABA;
+
 }
+
+.sliderDesc{
+	color: white;
+
+}
+
+.sliderGroup{
+	padding-bottom: 60px;
+}
+
+.slider-selection {
+	background: white;
+	height: 1px;
+}
+
+.slider-handle {
+	background: white;
+}
+

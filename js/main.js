@@ -40,72 +40,103 @@ $(document).ready(function(){
 		// Add WebGL scene to HTML
 		$('#canvasPlaceholder').html( renderer1.domElement );
 
+		buildHyperboloid();
+
 		
 	// MARK: - ADD GEOMETRY  ----------------------------------------------------------------------------
 
+		function removeHyperboloid() {
+			var selectedObject = scene1.getObjectByName("hyperboloid");
+			// selectedObject.cylinders[0].material.dispose();
+			// selectedObject.cylinders[0].geometry.dispose();
 
-		var bottom = new THREE.Object3D(); // Lower circle
-		var top = new THREE.Object3D(); // Upper circle
+			// !!BUG!! Something is wrong here causing a memory leak? 
+			for(j=0; j < selectedObject.children.length; j++) {
+				for(i=0; i < selectedObject.children[j].children.length; i++) {
+					selectedObject.children[j].children[i].material.dispose();
+					selectedObject.children[j].children[i].geometry.dispose();
+					
+					scene1.remove(selectedObject.children[j].children[i]);
+					selectedObject.children[j].remove(selectedObject.children[j].children[i]);
+				}
 
-		// Generate points on top and bottom circles
-		for(i=0; i < circPtCt; i++) {
+				scene1.remove(selectedObject.children[j]);
+				selectedObject.remove(selectedObject.children[j]);
+			}
 
-			// Add a cylinder
-			// var geometry = new THREE.CylinderGeometry(cylRad, cylRad, cylHeight, cylSeg);
-			var geometry = new THREE.SphereGeometry(.5);
-			var material = new THREE.MeshBasicMaterial({color: 0xffffff});
-			var cylinder = new THREE.Mesh(geometry, material);
-			
-			var degrees = ((360/circPtCt)*i);
-			var radians = degrees * Math.PI / 180;
+			scene1.remove(selectedObject);
 
-			var posX = Math.cos(radians) * circRad;
-			var posY = Math.sin(radians) * circRad;
 
-			cylinder.position.setX(posX);
-			cylinder.position.setY(posY);
-
-			var cylinder2 = new THREE.Mesh(geometry, material);
-
-			cylinder2.position.setX(posX);
-			cylinder2.position.setY(posY);
-			cylinder2.position.setZ(circ2Height);
-
-			console.log(cylinder.position);
-
-			bottom.add( cylinder );
-			top.add( cylinder2 );
 		}
 
-		// Transform top circle
-		top.rotation.z = circ2Rot;
-		top.position.x += circ2pos;
+		function buildHyperboloid() {
 
-		// Draw lines for points on circles
-        scene1.updateMatrixWorld();
-        top.updateMatrixWorld();
-       	var material = new THREE.MeshBasicMaterial({color: 0xffffff});
+			var bottom = new THREE.Object3D(); // Lower circle
+			var top = new THREE.Object3D(); // Upper circle
+			var connectors = new THREE.Object3D();
+			var hyperboloid = new THREE.Object3D();
 
-       	for(i=0; i < bottom.children.length; i++){
-       		// Get points from circles
-       		var pointB = bottom.children[i].position;
-       		var pointT = new THREE.Vector3();
-       		pointT.setFromMatrixPosition( top.children[i].matrixWorld);
+			// Generate points on top and bottom circles
+			for(i=0; i < circPtCt; i++) {
 
-       		// Build connector
-       		var connector = cylinderMesh( pointB , pointT, material);
-       		
-       		// Add connectors to Scene
-       		scene1.add( connector) ;
-       	}
-       	
+				// Add a cylinder
+				// var geometry = new THREE.CylinderGeometry(cylRad, cylRad, cylHeight, cylSeg);
+				var geometry = new THREE.SphereGeometry(.5);
+				var material = new THREE.MeshBasicMaterial({color: 0xffffff});
+				var cylinder = new THREE.Mesh(geometry, material);
+				
+				var degrees = ((360/circPtCt)*i);
+				var radians = degrees * Math.PI / 180;
 
-       	// Add geometries to scene
-		scene1.add( bottom );
-		scene1.add( top );
-		
-		// render the scene
-		render();
+				var posX = Math.cos(radians) * circRad;
+				var posY = Math.sin(radians) * circRad;
+
+				cylinder.position.setX(posX);
+				cylinder.position.setY(posY);
+
+				var cylinder2 = new THREE.Mesh(geometry, material);
+
+				cylinder2.position.setX(posX);
+				cylinder2.position.setY(posY);
+				cylinder2.position.setZ(circ2Height);
+
+				bottom.add( cylinder );
+				top.add( cylinder2 );
+			}
+
+			// Transform top circle
+			top.rotation.z = circ2Rot;
+			top.position.x += circ2pos;
+
+			// Draw lines for points on circles
+	        scene1.updateMatrixWorld();
+	        top.updateMatrixWorld();
+	       	var material = new THREE.MeshBasicMaterial({color: 0xffffff});
+
+	       	for(i=0; i < bottom.children.length; i++){
+	       		// Get points from circles
+	       		var pointB = bottom.children[i].position;
+	       		var pointT = new THREE.Vector3();
+	       		pointT.setFromMatrixPosition( top.children[i].matrixWorld);
+
+	       		// Build connector
+	       		var connector = cylinderMesh( pointB , pointT, material);
+	       		
+	       		// Add connectors to Scene
+	       		connectors.add( connector) ;
+	       	}
+	       	
+	       	hyperboloid.add( connectors );
+	       	hyperboloid.add( bottom );
+	       	hyperboloid.add( top );
+	       	hyperboloid.name = "hyperboloid";
+
+	       	// Add geometries to scene
+			scene1.add( hyperboloid );
+			
+			// render the scene
+			render();
+		};
 	
 	// MARK: - EVENT LISTENERS --------------------------------------------------------------------
 
@@ -129,6 +160,21 @@ $(document).ready(function(){
 			camera2.updateProjectionMatrix();
 			renderer2.setSize( window.innerWidth, window.innerHeight );
 		}
+
+		// With JQuery
+		$('#ex1').slider({
+			formatter: function(value) {
+				return 'Current value: ' + value;
+			}
+		});
+
+		$('#ex1').on("slide", function(slideEvt){
+			circPtCt = slideEvt.value;
+			removeHyperboloid();
+			buildHyperboloid();
+		})
+
+
 
 	// MARK: - METHODS ----------------------------------------------------------------------------
 

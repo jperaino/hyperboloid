@@ -106,3 +106,7 @@ h6
 	background-color: var(--primeDark);
 	
 }
+
+#ex1Slider .slider-selection {
+	background: #BABABA;
+}

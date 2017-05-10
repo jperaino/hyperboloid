@@ -1,0 +1,108 @@
+
+:root{ 
+/* -------- COLORS ---------
+/*Primary Blues*/
+--primeLight: #c3fdff;
+--primeMedium: #90caf9;
+--primeDark: #5d99c6;
+
+/*Secondary */
+--secondLight: #b085f5;
+--secondMedium: #7e57c2;
+--secondDark: #4d2c91;
+
+/*Grays*/
+--footerGray: #F5F5F5;
+
+
+/* --------- Page Margins ----------- */
+--leftSide: 20px;
+}
+
+.noSelect
+{
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+
+.alert
+{
+	margin: 20px;
+}
+
+h1 
+{
+	font-family: 'Cormorant Unicase', serif;
+}
+
+h6
+{
+	font-family: 'Cormorant Infant', serif;
+}
+
+#jpLogoWhite.png
+
+#navbar
+{
+	position: absolute;
+}
+
+#icon
+{
+	position: fixed;
+	margin-top: 20px;
+	margin-left: var(--leftSide);
+}
+
+#scrollNotice
+{
+	position: fixed;
+	margin-top: 85vh;
+	text-align: center;
+	font-family: 'Cormorant Unicase', serif;
+	width: 100%;
+	font-size: 18px;
+}
+
+#title-block
+{
+	text-align: center;
+	width: 100vw;
+	margin-top: 35vh;
+	padding-right: 30px;
+	padding-left: 30px;
+	vertical-align: center;
+	position: absolute;
+}
+
+
+}
+
+#summary{
+	padding-top: 20px;
+	font-family: 'Cormorant Infant', serif;
+}
+
+
+#crDate
+{
+	font-family: 'Cormorant Infant', serif;
+}
+
+#footer
+{
+	padding: var(--leftSide);
+	background-color: var(--footerGray);
+	height: 150px;
+}
+
+#parralax
+{
+	background-color: var(--primeDark);
+	
+}

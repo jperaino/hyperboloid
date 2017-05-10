@@ -5,21 +5,20 @@ $(document).ready(function(){
 
     	// SET SCENE 1 - - - - - - - Scene, camera, renderer
     	var scene1 = new THREE.Scene();
-		scene1.background = new THREE.Color( 0x90caf9 );
+		scene1.background = new THREE.Color( 0x5d99c6 );
 
 		var camera1 = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-		camera1.position.set(0,0,50);
+		camera1.position.set(0,0,100);
 
 		var renderer1 = new THREE.WebGLRenderer({ antialias: true });
 		renderer1.setSize( window.innerWidth, window.innerHeight);
 
+		var cylRad = 0.25;
+		var cylHeight = 75;
+		var cylSeg = 8;
 
-		// Add date to copyright 
-		var d = new Date()
-		var year = d.getFullYear()
-		console.log(year)
-		$('#crDate').html( "<i>Copyright &#169  " + year + " Jim Peraino. All rights reserved.</i>");
-
+		var circRad = 25;
+		var circPtCt = 30;
 
 	// MARK: - ON LOAD DO ----------------------------------------------------------------------------
 
@@ -29,13 +28,26 @@ $(document).ready(function(){
 		controls1 = new THREE.OrbitControls(camera1, renderer1.domElement);
 
 
-		// Add a cube
-		var geometry = new THREE.CylinderGeometry(.5,.5,20,8);
-		var material = new THREE.MeshBasicMaterial({color: 0xffffff});
-		var cylinder = new THREE.Mesh(geometry, material);
-		scene1.add( cylinder );
+		for(i=0; i < circPtCt; i++) {
 
-	
+			// Add a cylinder
+			var geometry = new THREE.CylinderGeometry(cylRad, cylRad, cylHeight, cylSeg);
+			var material = new THREE.MeshBasicMaterial({color: 0xffffff});
+			var cylinder = new THREE.Mesh(geometry, material);
+			
+			var degrees = ((360/circPtCt)*i);
+			var radians = degrees * Math.PI / 180;
+
+			var posX = Math.cos(radians) * circRad;
+			var posY = Math.sin(radians) * circRad;
+
+			cylinder.position.setX(posX);
+			cylinder.position.setZ(posY);
+
+			scene1.add( cylinder );
+
+		}
+
 		// render the scene
 		render();
 	
@@ -72,9 +84,9 @@ $(document).ready(function(){
 			requestAnimationFrame( render );
 
 				// Set cube rotation
-				cylinder.rotation.x += 0.0003
-				cylinder.rotation.y += 0.0003
-				cylinder.rotation.z += 0.0003
+				// cylinder.rotation.x += 0.0003
+				// cylinder.rotation.y += 0.0003
+				// cylinder.rotation.z += 0.0003
 
 				// Render scene
 				renderer1.render( scene1, camera1);

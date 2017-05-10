@@ -8,7 +8,8 @@ $(document).ready(function(){
 		scene1.background = new THREE.Color( 0x5d99c6 );
 
 		var camera1 = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-		camera1.position.set(0,0,100);
+		camera1.position.set(0,100,50);
+		camera1.up = new THREE.Vector3(0,0,1);
 
 		var renderer1 = new THREE.WebGLRenderer({ antialias: true });
 		renderer1.setSize( window.innerWidth, window.innerHeight);
@@ -20,6 +21,9 @@ $(document).ready(function(){
 		var circRad = 25;
 		var circPtCt = 30;
 
+
+		var circ2Height = 50;
+
 	// MARK: - ON LOAD DO ----------------------------------------------------------------------------
 
 		// Add WebGL scene to HTML
@@ -27,11 +31,14 @@ $(document).ready(function(){
 
 		controls1 = new THREE.OrbitControls(camera1, renderer1.domElement);
 
+		var bottom = new THREE.Object3D();
+		var top = new THREE.Object3D();
 
 		for(i=0; i < circPtCt; i++) {
 
 			// Add a cylinder
-			var geometry = new THREE.CylinderGeometry(cylRad, cylRad, cylHeight, cylSeg);
+			// var geometry = new THREE.CylinderGeometry(cylRad, cylRad, cylHeight, cylSeg);
+			var geometry = new THREE.SphereGeometry(.5);
 			var material = new THREE.MeshBasicMaterial({color: 0xffffff});
 			var cylinder = new THREE.Mesh(geometry, material);
 			
@@ -42,12 +49,83 @@ $(document).ready(function(){
 			var posY = Math.sin(radians) * circRad;
 
 			cylinder.position.setX(posX);
-			cylinder.position.setZ(posY);
+			cylinder.position.setY(posY);
 
-			scene1.add( cylinder );
+			var cylinder2 = new THREE.Mesh(geometry, material);
+
+			cylinder2.position.setX(posX);
+			cylinder2.position.setY(posY);
+			cylinder2.position.setZ(circ2Height);
+
+			console.log(cylinder.position);
+
+			bottom.add( cylinder );
+			top.add( cylinder2 );
+
+			
+			//scene1.add( cylinder2 );
+
+			// var cylinder2 = cylinder;
+			// cylinder2.position.setZ(circ2Height);
+
+			// scene1.add( cylinder2 );
 
 		}
 
+		// console.log(bottom.children.length);
+
+		for(i=0; i < bottom.children.length; i++) {
+			// console.log(bottom.children[i].position.x);
+		}
+
+		top.rotation.z = Math.PI/2;
+
+		
+		function cylinderMesh(pointX, pointY, material) {
+            var direction = new THREE.Vector3().subVectors(pointY, pointX);
+            var orientation = new THREE.Matrix4();
+            orientation.lookAt(pointX, pointY, new THREE.Object3D().up);
+            orientation.multiply(new THREE.Matrix4().set(1, 0, 0, 0,
+                0, 0, 1, 0,
+                0, -1, 0, 0,
+                0, 0, 0, 1));
+            var edgeGeometry = new THREE.CylinderGeometry(cylRad, cylRad, direction.length(), 8, 1);
+            var edge = new THREE.Mesh(edgeGeometry, material);
+            edge.applyMatrix(orientation);
+            // position based on midpoints - there may be a better solution than this
+            edge.position.x = (pointY.x + pointX.x) / 2;
+            edge.position.y = (pointY.y + pointX.y) / 2;
+            edge.position.z = (pointY.z + pointX.z) / 2;
+            return edge;
+        }
+
+        scene1.updateMatrixWorld();
+        top.updateMatrixWorld();
+       	var material = new THREE.MeshBasicMaterial({color: 0xffffff});
+
+       	for(i=0; i < bottom.children.length; i++){
+
+       		console.log("running");
+
+       		var pointB = bottom.children[i].position;
+       		var pointT = new THREE.Vector3();
+
+       		pointT.setFromMatrixPosition( top.children[i].matrixWorld);
+
+       		var connector = cylinderMesh( pointB , pointT, material);
+       		scene1.add( connector) ;
+
+       	}
+       	
+
+       	
+
+
+ 
+
+		scene1.add( bottom );
+		scene1.add( top );
+		
 		// render the scene
 		render();
 	
@@ -84,9 +162,9 @@ $(document).ready(function(){
 			requestAnimationFrame( render );
 
 				// Set cube rotation
-				// cylinder.rotation.x += 0.0003
-				// cylinder.rotation.y += 0.0003
-				// cylinder.rotation.z += 0.0003
+				// bottom.rotation.x += 0.0003
+				// bottom.rotation.y += 0.0003
+				// bottom.rotation.z += 0.0003
 
 				// Render scene
 				renderer1.render( scene1, camera1);

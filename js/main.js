@@ -18,10 +18,13 @@ $(document).ready(function(){
 
 		// Circles
 		var circRad = 25;
-		var circPtCt = 45;
+		var circPtCt = 50;
 		var circ2Height = 50;
 		var circ2Rot = 120 * Math.PI / 180;
 		var circ2pos = 40;
+
+		// Stairs
+		var stairLength = 33;
 
 
 
@@ -133,6 +136,13 @@ $(document).ready(function(){
 	       		
 	       		// Add connectors to Scene
 	       		connectors.add( connector) ;
+
+	       		// Build end spheres
+	       		var stairEndPt = getPointInBetweenByLength(pointB, pointT, stairLength);
+
+	       		connectors.add ( stairEndPt );
+
+
 	       	}
 	       	
 	       	hyperboloid.add( connectors );
@@ -189,6 +199,12 @@ $(document).ready(function(){
 			}
 		});
 
+		$('#ex4').slider({
+			formatter: function(value) {
+				return 'Current value: ' + value;
+			}
+		});
+
 		$('#ex1').on("slide", function(slideEvt){
 			circPtCt = slideEvt.value;
 			removeHyperboloid();
@@ -208,6 +224,11 @@ $(document).ready(function(){
 			buildHyperboloid();
 		})
 
+		$('#ex4').on("slide", function(slideEvt4){
+			stairLength = slideEvt4.value;
+			removeHyperboloid();
+			buildHyperboloid();
+		})
 
 
 	// MARK: - METHODS ----------------------------------------------------------------------------
@@ -233,10 +254,10 @@ $(document).ready(function(){
 	// ___GEOMETRY HELPERS
 
 		// Add cylinder mesh from Points
-		function cylinderMesh(pointX, pointY, material) {
-            var direction = new THREE.Vector3().subVectors(pointY, pointX);
+		function cylinderMesh(pointA, pointB, material) {
+            var direction = new THREE.Vector3().subVectors(pointA, pointB);
             var orientation = new THREE.Matrix4();
-            orientation.lookAt(pointX, pointY, new THREE.Object3D().up);
+            orientation.lookAt(pointA, pointB, new THREE.Object3D().up);
             orientation.multiply(new THREE.Matrix4().set(1, 0, 0, 0,
                 0, 0, 1, 0,
                 0, -1, 0, 0,
@@ -245,12 +266,26 @@ $(document).ready(function(){
             var edge = new THREE.Mesh(edgeGeometry, material);
             edge.applyMatrix(orientation);
             // position based on midpoints - there may be a better solution than this
-            edge.position.x = (pointY.x + pointX.x) / 2;
-            edge.position.y = (pointY.y + pointX.y) / 2;
-            edge.position.z = (pointY.z + pointX.z) / 2;
+            edge.position.x = (pointB.x + pointA.x) / 2;
+            edge.position.y = (pointB.y + pointA.y) / 2;
+            edge.position.z = (pointB.z + pointA.z) / 2;
             return edge;
         }
 
+        // Add sphere mesh at stair lenght points
+        function getPointInBetweenByLength(pointA, pointB, length) {
+    
+		    var dir = pointB.clone().sub(pointA).normalize().multiplyScalar(length);
+    		finalPt = pointA.clone().add(dir);
+
+		    var geometry = new THREE.SphereGeometry(.5);
+		    var material = new THREE.MeshBasicMaterial({color: 0x4d2b90});
+		    var endSphere = new THREE.Mesh(geometry, material);
+		    endSphere.position.x = finalPt.x;
+		    endSphere.position.y = finalPt.y;
+		    endSphere.position.z = finalPt.z;
+		    return endSphere;
+		}
 
 	// ___ALERTS
 

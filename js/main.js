@@ -30,13 +30,16 @@ $(document).ready(function(){
 		scene1.background = new THREE.Color( 0x9474cc );
 
 		var camera1 = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-		camera1.position.set(circ2pos/2, 100 , circ2Height/2);
+		camera1.position.set(circ2pos/2, 70 , circ2Height/2);
 		camera1.up = new THREE.Vector3(0,0,1);
+		camera1.lookAt(new THREE.Vector3(circ2pos/2, 0 , circ2Height/2));
+
 
 		var renderer1 = new THREE.WebGLRenderer({ antialias: true });
 		renderer1.setSize( window.innerWidth, window.innerHeight);
 
 		controls1 = new THREE.OrbitControls(camera1, renderer1.domElement);
+		controls1.center.set(circ2pos/2, 0 , circ2Height/2)
 
 
 		

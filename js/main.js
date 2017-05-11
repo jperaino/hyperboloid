@@ -157,6 +157,10 @@ $(document).ready(function(){
 			$("#scrollNotice").css("opacity", 1 - $(window).scrollTop() / 50);
 		});
 
+
+		$(".fadeJ").fadeIn(750)
+		
+
 	// MARK: - ACTIONS ----------------------------------------------------------------------------
 
     	// Keep the view boundary updated
@@ -216,6 +220,7 @@ $(document).ready(function(){
 			requestAnimationFrame( render );
 
 				// Set cube rotation
+
 				// bottom.rotation.x += 0.0003
 				// bottom.rotation.y += 0.0003
 				// bottom.rotation.z += 0.0003

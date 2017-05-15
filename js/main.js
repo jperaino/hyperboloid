@@ -34,7 +34,7 @@ $(document).ready(function(){
 		scene.background = new THREE.Color( 0x9474cc );
 
 		var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-		camera.position.set(circ2pos/2, 70 , cylHeight/2);
+		camera.position.set(circ2pos/2, -80 , cylHeight/2);
 		camera.up = new THREE.Vector3(0,0,1);
 		camera.lookAt(new THREE.Vector3(circ2pos/2, 0 , cylHeight/2));
 
@@ -136,8 +136,6 @@ $(document).ready(function(){
 
 	       		stairEnds.add(endSphere);
 
-
-
 				top.add(topPoint);
 				cylinders.add (cylinder);
 			}
@@ -162,13 +160,7 @@ $(document).ready(function(){
 		// Listen for window resize
 		window.addEventListener( 'resize', onWindowResize, false );
 
-		// Hide Scroll icon on scroll
-		$(window).scroll(function(){
-			$("#scrollNotice").css("opacity", 1 - $(window).scrollTop() / 50);
-		});
-
-
-		$(".fadeJ").fadeIn(750)
+		$(".fadeJ").delay(100).fadeIn(750);
 		
 
 	// MARK: - ACTIONS ----------------------------------------------------------------------------

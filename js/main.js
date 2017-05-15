@@ -3,46 +3,52 @@ $(document).ready(function(){
 
     // MARK: - PROPERTIES ----------------------------------------------------------------------------
 
-    	// Add date to copyright 
-		var d = new Date()
-		var year = d.getFullYear()
-		console.log(year)
-		$('#crDate').html( "<i>Copyright &#169  " + year + " Jim Peraino. All rights reserved.</i>");
-
     	// SET HYPERBOLOID VARIABLES
 
 		// Tubes
 		var cylRad = 0.15;
-		var cylHeight = 75;
-		var cylSeg = 8;
+		var cylHeight = 50;
+
 
 		// Circles
 		var circRad = 25;
 		var circPtCt = 50;
-		var circ2Height = 50;
+		var circ2Height = cylHeight;
 		var circ2Rot = 120 * Math.PI / 180;
 		var circ2pos = 40;
+
+
+		var bottom = new THREE.Object3D(); // Lower circle
+		var top = new THREE.Object3D(); // Upper circle
+		var cylinders = new THREE.Object3D();
+		var endPts = new THREE.Object3D();
+		var hyperboloid = new THREE.Object3D();
 
 		// Stairs
 		var stairLength = 33;
 
+		// Memory
+		var memoryCounter = 0;
+
+		var material = new THREE.MeshBasicMaterial({color: 0xffffff});
+		var material2 = new THREE.MeshBasicMaterial({color: 0x4d2b90});
 
 
     	// SET SCENE 1 - - - - - - - Scene, camera, renderer
-    	var scene1 = new THREE.Scene();
-		scene1.background = new THREE.Color( 0x9474cc );
+    	var scene = new THREE.Scene();
+		scene.background = new THREE.Color( 0x9474cc );
 
-		var camera1 = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-		camera1.position.set(circ2pos/2, 70 , circ2Height/2);
-		camera1.up = new THREE.Vector3(0,0,1);
-		camera1.lookAt(new THREE.Vector3(circ2pos/2, 0 , circ2Height/2));
+		var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+		camera.position.set(circ2pos/2, 70 , circ2Height/2);
+		camera.up = new THREE.Vector3(0,0,1);
+		camera.lookAt(new THREE.Vector3(circ2pos/2, 0 , circ2Height/2));
 
 
-		var renderer1 = new THREE.WebGLRenderer({ antialias: true });
-		renderer1.setSize( window.innerWidth, window.innerHeight);
+		var renderer = new THREE.WebGLRenderer({ antialias: true });
+		renderer.setSize( window.innerWidth, window.innerHeight);
 
-		controls1 = new THREE.OrbitControls(camera1, renderer1.domElement);
-		controls1.center.set(circ2pos/2, 0 , circ2Height/2)
+		controls = new THREE.OrbitControls(camera, renderer.domElement);
+		controls.target.set(circ2pos/2, 0 , circ2Height/2)
 
 
 		
@@ -50,108 +56,95 @@ $(document).ready(function(){
 	// MARK: - ON LOAD DO ----------------------------------------------------------------------------
 
 		// Add WebGL scene to HTML
-		$('#canvasPlaceholder').html( renderer1.domElement );
+		$('#canvasPlaceholder').html( renderer.domElement );
 
 		buildHyperboloid();
 
 		
 	// MARK: - ADD GEOMETRY  ----------------------------------------------------------------------------
+		 function updateHyperboloid() {
+		 	var hyperOrig = scene.getObjectByName("hyperboloid");
 
-		function removeHyperboloid() {
-			var selectedObject = scene1.getObjectByName("hyperboloid");
-			// selectedObject.cylinders[0].material.dispose();
-			// selectedObject.cylinders[0].geometry.dispose();
+			// Transform top circle
+			top.rotation.z = circ2Rot;
+			top.position.x = circ2pos;
 
-			// !!BUG!! Something is wrong here causing a memory leak? 
-			for(j=0; j < selectedObject.children.length; j++) {
-				for(i=0; i < selectedObject.children[j].children.length; i++) {
-					selectedObject.children[j].children[i].material.dispose();
-					selectedObject.children[j].children[i].geometry.dispose();
-					
-					scene1.remove(selectedObject.children[j].children[i]);
-					selectedObject.children[j].remove(selectedObject.children[j].children[i]);
-				}
+			scene.updateMatrixWorld();
+	        top.updateMatrixWorld();		
 
-				scene1.remove(selectedObject.children[j]);
-				selectedObject.remove(selectedObject.children[j]);
+			// Update cylinders
+			for(i=0; i < circPtCt; i++) {
+				var cyl = hyperOrig.children[0].children[i];
+
+				// get target point
+				var focalPt = new THREE.Vector3();
+				focalPt.setFromMatrixPosition( top.children[i].matrixWorld );
+
+				// Reorient cylinder to target point
+				cyl.lookAt(focalPt);
+
+				var scale = cyl.position.distanceTo(focalPt)/cylHeight;
+
+				// Scale cylinder to target point
+				cyl.scale.z = scale;
+				//cyl.pos.distanceTo(focalPt);
+
 			}
 
-			scene1.remove(selectedObject);
-
+			//render();
 
 		}
 
+
 		function buildHyperboloid() {
-
-			var bottom = new THREE.Object3D(); // Lower circle
-			var top = new THREE.Object3D(); // Upper circle
-			var connectors = new THREE.Object3D();
-			var hyperboloid = new THREE.Object3D();
-
+			
 			// Generate points on top and bottom circles
 			for(i=0; i < circPtCt; i++) {
-
-				// Add a cylinder
-				// var geometry = new THREE.CylinderGeometry(cylRad, cylRad, cylHeight, cylSeg);
-				var geometry = new THREE.SphereGeometry(.5);
-				var material = new THREE.MeshBasicMaterial({color: 0xffffff});
-				var cylinder = new THREE.Mesh(geometry, material);
 				
+				// Find start points
 				var degrees = ((360/circPtCt)*i);
 				var radians = degrees * Math.PI / 180;
 
 				var posX = Math.cos(radians) * circRad;
 				var posY = Math.sin(radians) * circRad;
 
-				cylinder.position.setX(posX);
-				cylinder.position.setY(posY);
+				// Build cylinder
+				var geometry = new THREE.CylinderBufferGeometry(cylRad, cylRad, cylHeight);
+				var cylinder = new THREE.Mesh(geometry, material);
+				cylinder.geometry.rotateX( Math.PI / 2);
+				cylinder.geometry.translate(0,0, cylHeight/2 );
+				
+				// Move cylinder to position
+				cylinder.position.x = posX;
+				cylinder.position.y = posY;
 
-				var cylinder2 = new THREE.Mesh(geometry, material);
+				var topPointPoint = new THREE.SphereBufferGeometry(.5);
+				var topPoint = new THREE.Mesh(topPointPoint, material);
+				topPoint.position.x = posX;
+				topPoint.position.y = posY;
+				topPoint.position.z = cylHeight;
 
-				cylinder2.position.setX(posX);
-				cylinder2.position.setY(posY);
-				cylinder2.position.setZ(circ2Height);
+				cylinder.lookAt(topPoint.position);
 
-				bottom.add( cylinder );
-				top.add( cylinder2 );
+				// var geo2 = new THREE.SphereBufferGeometry(1);
+				// var sphere = new THREE.Mesh(geo2, material);
+				// sphere.position.x = posX;
+				// sphere.position.y = posY;
+
+				top.add(topPoint);
+				cylinders.add (cylinder);
+				//cylinders.add (sphere);
+
 			}
 
-			// Transform top circle
-			top.rotation.z = circ2Rot;
-			top.position.x += circ2pos;
 
-			// Draw lines for points on circles
-	        scene1.updateMatrixWorld();
-	        top.updateMatrixWorld();
-	       	var material = new THREE.MeshBasicMaterial({color: 0xffffff});
+			//scene.add( top );
 
-	       	for(i=0; i < bottom.children.length; i++){
-	       		// Get points from circles
-	       		var pointB = bottom.children[i].position;
-	       		var pointT = new THREE.Vector3();
-	       		pointT.setFromMatrixPosition( top.children[i].matrixWorld);
-
-	       		// Build connector
-	       		var connector = cylinderMesh( pointB , pointT, material);
-	       		
-	       		// Add connectors to Scene
-	       		connectors.add( connector) ;
-
-	       		// Build end spheres
-	       		var stairEndPt = getPointInBetweenByLength(pointB, pointT, stairLength);
-
-	       		connectors.add ( stairEndPt );
-
-
-	       	}
-	       	
-	       	hyperboloid.add( connectors );
-	       	//hyperboloid.add( bottom );
-	       	//hyperboloid.add( top );
+	       	hyperboloid.add( cylinders );
 	       	hyperboloid.name = "hyperboloid";
 
 	       	// Add geometries to scene
-			scene1.add( hyperboloid );
+			scene.add( hyperboloid );
 			
 			// render the scene
 			render();
@@ -175,9 +168,9 @@ $(document).ready(function(){
 
     	// Keep the view boundary updated
     	function onWindowResize() {
-			camera1.aspect = window.innerWidth / window.innerHeight;
-			camera1.updateProjectionMatrix();
-			renderer1.setSize( window.innerWidth, window.innerHeight );
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+			renderer.setSize( window.innerWidth, window.innerHeight );
 		}
 
 		// With JQuery
@@ -207,27 +200,23 @@ $(document).ready(function(){
 
 		$('#ex1').on("slide", function(slideEvt){
 			circPtCt = slideEvt.value;
-			removeHyperboloid();
-			buildHyperboloid();
+			updateHyperboloid();
 		})
 
 		$('#ex2').on("slide", function(slideEvt2){
 			rotation = slideEvt2.value * Math.PI / 180;
 			circ2Rot = rotation;
-			removeHyperboloid();
-			buildHyperboloid();
+			updateHyperboloid();
 		})
 
 		$('#ex3').on("slide", function(slideEvt3){
 			circ2pos = slideEvt3.value;
-			removeHyperboloid();
-			buildHyperboloid();
+			updateHyperboloid();
 		})
 
 		$('#ex4').on("slide", function(slideEvt4){
 			stairLength = slideEvt4.value;
-			removeHyperboloid();
-			buildHyperboloid();
+			updateHyperboloid();
 		})
 
 
@@ -240,52 +229,27 @@ $(document).ready(function(){
 		function render() {
 			requestAnimationFrame( render );
 
-				// Set cube rotation
-
-				// bottom.rotation.x += 0.0003
-				// bottom.rotation.y += 0.0003
-				// bottom.rotation.z += 0.0003
-
 				// Render scene
-				renderer1.render( scene1, camera1);
-				controls1.update();
+				renderer.render( scene, camera);
+				controls.update();
 		};
 
 	// ___GEOMETRY HELPERS
 
-		// Add cylinder mesh from Points
-		function cylinderMesh(pointA, pointB, material) {
-            var direction = new THREE.Vector3().subVectors(pointA, pointB);
-            var orientation = new THREE.Matrix4();
-            orientation.lookAt(pointA, pointB, new THREE.Object3D().up);
-            orientation.multiply(new THREE.Matrix4().set(1, 0, 0, 0,
-                0, 0, 1, 0,
-                0, -1, 0, 0,
-                0, 0, 0, 1));
-            var edgeGeometry = new THREE.CylinderGeometry(cylRad, cylRad, direction.length(), 8, 1);
-            var edge = new THREE.Mesh(edgeGeometry, material);
-            edge.applyMatrix(orientation);
-            // position based on midpoints - there may be a better solution than this
-            edge.position.x = (pointB.x + pointA.x) / 2;
-            edge.position.y = (pointB.y + pointA.y) / 2;
-            edge.position.z = (pointB.z + pointA.z) / 2;
-            return edge;
-        }
-
         // Add sphere mesh at stair lenght points
-        function getPointInBetweenByLength(pointA, pointB, length) {
+  //       function getPointInBetweenByLength(pointA, pointB, length) {
     
-		    var dir = pointB.clone().sub(pointA).normalize().multiplyScalar(length);
-    		finalPt = pointA.clone().add(dir);
+		//     var dir = pointB.clone().sub(pointA).normalize().multiplyScalar(length);
+  //   		finalPt = pointA.clone().add(dir);
 
-		    var geometry = new THREE.SphereGeometry(.5);
-		    var material = new THREE.MeshBasicMaterial({color: 0x4d2b90});
-		    var endSphere = new THREE.Mesh(geometry, material);
-		    endSphere.position.x = finalPt.x;
-		    endSphere.position.y = finalPt.y;
-		    endSphere.position.z = finalPt.z;
-		    return endSphere;
-		}
+		//     var geometry = new THREE.SphereBufferGeometry(.5);
+		    
+		//     var endSphere = new THREE.Mesh(geometry, material2);
+		//     endSphere.position.x = finalPt.x;
+		//     endSphere.position.y = finalPt.y;
+		//     endSphere.position.z = finalPt.z;
+		//     return endSphere;
+		// }
 
 	// ___ALERTS
 

@@ -9,46 +9,41 @@ $(document).ready(function(){
 		var cylRad = 0.15;
 		var cylHeight = 50;
 
-
 		// Circles
 		var circRad = 25;
-		var circPtCt = 50;
-		var circ2Height = cylHeight;
+		var circPtCt = 60;
 		var circ2Rot = 120 * Math.PI / 180;
-		var circ2pos = 40;
+		var circ2pos = 50;
 
-
-		var bottom = new THREE.Object3D(); // Lower circle
 		var top = new THREE.Object3D(); // Upper circle
 		var cylinders = new THREE.Object3D();
 		var endPts = new THREE.Object3D();
 		var hyperboloid = new THREE.Object3D();
+		var stairEnds = new THREE.Object3D();
 
 		// Stairs
 		var stairLength = 33;
 
-		// Memory
-		var memoryCounter = 0;
-
+		// Materials
 		var material = new THREE.MeshBasicMaterial({color: 0xffffff});
 		var material2 = new THREE.MeshBasicMaterial({color: 0x4d2b90});
 
 
-    	// SET SCENE 1 - - - - - - - Scene, camera, renderer
+    	// SET SCENE - - - - - - - 
     	var scene = new THREE.Scene();
 		scene.background = new THREE.Color( 0x9474cc );
 
 		var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-		camera.position.set(circ2pos/2, 70 , circ2Height/2);
+		camera.position.set(circ2pos/2, 70 , cylHeight/2);
 		camera.up = new THREE.Vector3(0,0,1);
-		camera.lookAt(new THREE.Vector3(circ2pos/2, 0 , circ2Height/2));
+		camera.lookAt(new THREE.Vector3(circ2pos/2, 0 , cylHeight/2));
 
 
 		var renderer = new THREE.WebGLRenderer({ antialias: true });
 		renderer.setSize( window.innerWidth, window.innerHeight);
 
 		controls = new THREE.OrbitControls(camera, renderer.domElement);
-		controls.target.set(circ2pos/2, 0 , circ2Height/2)
+		controls.target.set(circ2pos/2, 0 , cylHeight/2)
 
 
 		
@@ -64,6 +59,7 @@ $(document).ready(function(){
 	// MARK: - ADD GEOMETRY  ----------------------------------------------------------------------------
 		 function updateHyperboloid() {
 		 	var hyperOrig = scene.getObjectByName("hyperboloid");
+		 	var stairEndsOrig = scene.getObjectByName("stairEnds")
 
 			// Transform top circle
 			top.rotation.z = circ2Rot;
@@ -83,16 +79,17 @@ $(document).ready(function(){
 				// Reorient cylinder to target point
 				cyl.lookAt(focalPt);
 
-				var scale = cyl.position.distanceTo(focalPt)/cylHeight;
-
 				// Scale cylinder to target point
+				var scale = cyl.position.distanceTo(focalPt)/cylHeight;
 				cyl.scale.z = scale;
-				//cyl.pos.distanceTo(focalPt);
 
+				// Move stair end point
+				var stairEndOrig = stairEndsOrig.children[i];
+				var newPt = getPointInBetweenByLength(cyl.position, focalPt, stairLength);
+				stairEndOrig.position.x = newPt.x;
+				stairEndOrig.position.y = newPt.y;
+				stairEndOrig.position.z = newPt.z;
 			}
-
-			//render();
-
 		}
 
 
@@ -126,25 +123,30 @@ $(document).ready(function(){
 
 				cylinder.lookAt(topPoint.position);
 
-				// var geo2 = new THREE.SphereBufferGeometry(1);
-				// var sphere = new THREE.Mesh(geo2, material);
-				// sphere.position.x = posX;
-				// sphere.position.y = posY;
+				// Add stair end point
+	       		var stairGeo = new THREE.SphereBufferGeometry(.5);
+	       		var endSphere = new THREE.Mesh(stairGeo, material2);
+	       		endSphere.position.x = posX;
+	       		endSphere.position.y = posY; 
+
+	       		stairEnds.add(endSphere);
+
+
 
 				top.add(topPoint);
 				cylinders.add (cylinder);
-				//cylinders.add (sphere);
-
 			}
-
-
-			//scene.add( top );
 
 	       	hyperboloid.add( cylinders );
 	       	hyperboloid.name = "hyperboloid";
 
+	       	stairEnds.name = "stairEnds";
+
 	       	// Add geometries to scene
 			scene.add( hyperboloid );
+			scene.add( stairEnds );
+
+			updateHyperboloid();
 			
 			// render the scene
 			render();
@@ -174,11 +176,11 @@ $(document).ready(function(){
 		}
 
 		// With JQuery
-		$('#ex1').slider({
-			formatter: function(value) {
-				return 'Current value: ' + value;
-			}
-		});
+		// $('#ex1').slider({
+		// 	formatter: function(value) {
+		// 		return 'Current value: ' + value;
+		// 	}
+		// });
 
 		$('#ex2').slider({
 			formatter: function(value) {
@@ -198,10 +200,10 @@ $(document).ready(function(){
 			}
 		});
 
-		$('#ex1').on("slide", function(slideEvt){
-			circPtCt = slideEvt.value;
-			updateHyperboloid();
-		})
+		// $('#ex1').on("slide", function(slideEvt){
+		// 	cylHeight = slideEvt.value;
+		// 	updateHyperboloid();
+		// })
 
 		$('#ex2').on("slide", function(slideEvt2){
 			rotation = slideEvt2.value * Math.PI / 180;
@@ -235,21 +237,14 @@ $(document).ready(function(){
 		};
 
 	// ___GEOMETRY HELPERS
+		// Return stair endpoint location
+		function getPointInBetweenByLength(pointA, pointB, length) {
+			var dir = pointB.clone().sub(pointA).normalize().multiplyScalar(length);
+			finalPt = pointA.clone().add(dir);
 
-        // Add sphere mesh at stair lenght points
-  //       function getPointInBetweenByLength(pointA, pointB, length) {
-    
-		//     var dir = pointB.clone().sub(pointA).normalize().multiplyScalar(length);
-  //   		finalPt = pointA.clone().add(dir);
+			return finalPt;
+		}
 
-		//     var geometry = new THREE.SphereBufferGeometry(.5);
-		    
-		//     var endSphere = new THREE.Mesh(geometry, material2);
-		//     endSphere.position.x = finalPt.x;
-		//     endSphere.position.y = finalPt.y;
-		//     endSphere.position.z = finalPt.z;
-		//     return endSphere;
-		// }
 
 	// ___ALERTS
 

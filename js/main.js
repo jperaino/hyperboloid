@@ -11,9 +11,9 @@ $(document).ready(function(){
 
 		// Circles
 		var circRad = 25;
-		var circPtCt = 60;
+		var circPtCt = 50;
 		var circ2Rot = 120 * Math.PI / 180;
-		var circ2pos = 50;
+		var circ2pos = 40;
 
 		var top = new THREE.Object3D(); // Upper circle
 		var cylinders = new THREE.Object3D();
@@ -54,6 +54,11 @@ $(document).ready(function(){
 		$('#canvasPlaceholder').html( renderer.domElement );
 
 		buildHyperboloid();
+
+		// Add date to copyright 
+		var d = new Date()
+		var year = d.getFullYear()
+		$('#crDate').html( "<i>Copyright &#169  " + year + " Jim Peraino. All rights reserved.</i>");
 
 		
 	// MARK: - ADD GEOMETRY  ----------------------------------------------------------------------------

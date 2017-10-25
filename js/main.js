@@ -26,13 +26,13 @@ $(document).ready(function(){
 
 		// Materials
 		var material = new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true});
-		var material2 = new THREE.MeshBasicMaterial({color: 0x4d2b90});
+		var material2 = new THREE.MeshBasicMaterial({color: 0x000000});
 		material.opacity = 1;
 
 
     	// SET SCENE - - - - - - - 
     	var scene = new THREE.Scene();
-		scene.background = new THREE.Color( 0x9474cc );
+		scene.background = new THREE.Color( 0x37474f );
 
 		var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 		camera.position.set(circ2pos/2, -80 , cylHeight/2);

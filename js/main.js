@@ -25,8 +25,9 @@ $(document).ready(function(){
 		var stairLength = 33;
 
 		// Materials
-		var material = new THREE.MeshBasicMaterial({color: 0xffffff});
+		var material = new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true});
 		var material2 = new THREE.MeshBasicMaterial({color: 0x4d2b90});
+		material.opacity = 1;
 
 
     	// SET SCENE - - - - - - - 
@@ -44,6 +45,7 @@ $(document).ready(function(){
 
 		controls = new THREE.OrbitControls(camera, renderer.domElement);
 		controls.target.set(circ2pos/2, 0 , cylHeight/2)
+		controls.enableZoom = false;
 
 
 		
@@ -155,6 +157,13 @@ $(document).ready(function(){
 			render();
 		};
 	
+
+		function buildStair() {
+
+			
+			
+		}
+
 	// MARK: - EVENT LISTENERS --------------------------------------------------------------------
 
 		// Listen for window resize
